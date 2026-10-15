@@ -7,12 +7,12 @@ const RESET_DELAY_MS = 5 * 60 * 1000;
 let resetTimer = null;
 const NON_LU = '⚠ NON LU - vérifier';
 const LOCAL = {
-  pdf: './static/vendor/pdf/pdf.min.js',
-  pdfWorker: './static/vendor/pdf/pdf.worker.min.js',
-  tess: './static/vendor/ocr/tesseract.min.js',
-  tessWorker: './static/vendor/ocr/worker.min.js',
-  tessCore: './static/vendor/ocr/core',
-  tessLang: './static/vendor/ocr/lang'
+  pdf: '../static/vendor/pdf/pdf.min.js',
+  pdfWorker: '../static/vendor/pdf/pdf.worker.min.js',
+  tess: '../static/vendor/ocr/tesseract.min.js',
+  tessWorker: '../static/vendor/ocr/worker.min.js',
+  tessCore: '../static/vendor/ocr/core',
+  tessLang: '../static/vendor/ocr/lang'
 };
 
 const $ = id => document.getElementById(id);
@@ -45,7 +45,7 @@ let travelCleanupTimer = null;
 let sirenSound = null;
 let statusBeforeTravel = '';
 let statusClassBeforeTravel = '';
-function setBusy(value){busy=value;ui.reset.disabled=value;ui.fileInput.disabled=value;ui.dropzone.setAttribute('aria-disabled',String(value));regenerate();ui.progressPanel.classList.toggle('is-loading',value);if(!value&&progressValue<100)ui.progressPanel.classList.add('is-idle');}
+function setBusy(value){busy=value;ui.reset.disabled=value;ui.fileInput.disabled=value;ui.dropzone.setAttribute('aria-disabled',String(value));ui.copy.disabled=value||!Object.values(fields).some(el=>el.value.trim());ui.progressPanel.classList.toggle('is-loading',value);if(!value&&progressValue<100)ui.progressPanel.classList.add('is-idle');}
 
 function paintProgress(value) {
   visualProgress = Math.round(Math.max(0, Math.min(100, value)));
@@ -641,108 +641,26 @@ function updateFields(data){
   fields.params.value=data.params; fields.admin.value=data.admin; fields.anamnesis.value=data.anamnesis;
   for(const key of ['vehicle','diagnosis','transport','destination'])fields[key].value=data[key];
   regenerate();
-  fitAllEditors();
 }
 function valueOrNR(el){const v=el.value.trim();return v||'NR';}
-const extraCategories = [];
-const fieldTitles = {
-  vehicle:'Type de vecteur SMUR', address:'Adresse d’intervention', identity:'Patient',
-  history:'Antécédents', usual:'Traitement habituel', params:'Paramètres',
-  admin:'Traitements administrés', anamnesis:'Anamnèse', diagnosis:'Diagnostic',
-  transport:'Transport', destination:'Destination'
-};
-const mandatoryGroups = {
-  'Identité':['identity'], 'Intervention':['address','vehicle'],
-  'Médical':['history','usual','anamnesis','params','admin','diagnosis'],
-  'Transport et orientation':['transport','destination']
-};
-for(const [key,field] of Object.entries(fields)) {
-  field.setAttribute('aria-label',fieldTitles[key]);
-  field.readOnly=true;
-}
-function clearCategories() {
-  extraCategories.length = 0;
-  $('documentCategories').replaceChildren();
-  $('documentSection').hidden = true;
-
-}
-// Split at recognised PARSYS section headings. Unknown material remains available
-// in the current section or in a page block, so no page is silently discarded.
-function buildDocumentCategories(pages) {
-  extraCategories.push(...extractOptionalFields(pages));
-  for (const category of extraCategories) {
-    const container = document.createElement('div'); container.className = 'field full document-category';
-    const label = document.createElement('label');
-    const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
-    const id = 'document-category-' + extraCategories.indexOf(category);
-    label.htmlFor = id + '-selected'; checkbox.id = id + '-selected';
-    checkbox.setAttribute('aria-label', 'Inclure : ' + category.title);
-    label.append(checkbox, document.createTextNode(category.title));
-    const text = document.createElement('textarea'); text.id = id; text.rows = 1;
-    text.readOnly=true;
-    text.value = category.lines.join('\n') || 'NR';
-    text.setAttribute('aria-label', category.title);
-    text.addEventListener('input', () => fitEditor(text));
-    category.checkbox = checkbox; category.field = text;
-    checkbox.addEventListener('change', () => { text.hidden=!checkbox.checked; regenerate(); fitEditor(text); }); text.addEventListener('input', regenerate);
-    text.hidden=true;
-    container.append(label, text);
-    let group = [...$('documentCategories').children].find(el=>el.dataset.categoryGroup===category.group);
-    if (!group) {
-      group = document.createElement('section'); group.dataset.categoryGroup=category.group;
-      const title=document.createElement('h3'); title.textContent=category.group;
-      group.append(title); $('documentCategories').append(group);
-    }
-    if (category.uncertain) {
-      const note=document.createElement('p'); note.className='source-note';
-      note.textContent='Lecture brute à comparer au PDF original'; container.append(note);
-    }
-    group.append(container);
-  }
-  $('documentSection').hidden = false;
-  requestAnimationFrame(fitAllEditors);
-}
-function fitEditor(el) {
-  if (!el.getClientRects().length) return;
-  el.title=el.value;
-  el.style.height='0px';
-  el.style.height=el.scrollHeight+'px';
-}
-function fitAllEditors() { for (const el of [...Object.values(fields), ...extraCategories.map(c=>c.field)]) if(el) fitEditor(el); }
-document.addEventListener('toggle', fitAllEditors, true);
-window.addEventListener('resize', fitAllEditors);
-for(const field of Object.values(fields)) field.addEventListener('input',()=>fitEditor(field));
 function regenerate(){
-  const line=(title,field)=>title+' : '+valueOrNR(field).replace(/\s*\n+\s*/g,' ; ');
-  const blocks = [];
-  for(const [group,keys] of Object.entries(mandatoryGroups)) {
-    const content=keys.map(key=>line(fieldTitles[key],fields[key]));
-    const extras=extraCategories.filter(c=>c.group===group && c.checkbox?.checked);
-    for(const category of extras) content.push(line(category.title,category.field));
-    blocks.push(group.toUpperCase()+'\n'+content.join('\n'));
-  }
-  const others=extraCategories.filter(c=>!mandatoryGroups[c.group] && c.checkbox?.checked);
-  if(others.length) blocks.push('AUTRES INFORMATIONS\n'+others.map(c=>line(c.title,c.field)).join('\n'));
-  for(const category of extraCategories) category.field.closest('.field').classList.toggle('is-excluded',!category.checkbox.checked);
-  ui.result.value = blocks.join('\n\n');
-  const count=extraCategories.filter(c=>c.checkbox?.checked).length;
-  $('selectionCount').textContent='11 champs obligatoires · '+count+' complément'+(count>1?'s':'');
-  const hasSelectedContent=Object.values(fields).some(el=>el.value.trim()) || extraCategories.some(c=>c.checkbox?.checked && c.field.value.trim());
-  if(!hasSelectedContent) ui.result.value='';
-  ui.copy.disabled = busy || !hasSelectedContent;
-}
-for (const [id, checked] of [['selectAll',true],['selectNone',false]]) {
-  $(id).addEventListener('click', () => {
-    for (const category of extraCategories) { category.checkbox.checked=checked; category.field.hidden=!checked; }
-    regenerate();
-    fitAllEditors();
-  });
+  ui.result.value = [
+    "INDICATIF DU VÉHICULE\n"+valueOrNR(fields.vehicle),
+    "ADRESSE D'INTERVENTION\n"+valueOrNR(fields.address),
+    'IDENTITE\n'+valueOrNR(fields.identity),
+    'ANTECEDENTS\n'+valueOrNR(fields.history),
+    'TRAITEMENT HABITUEL\n'+valueOrNR(fields.usual),
+    'PARAMETRES\n'+valueOrNR(fields.params),
+    'TRAITEMENTS ADMINISTRES\n'+valueOrNR(fields.admin),
+    'ANAMNESE\n'+valueOrNR(fields.anamnesis),
+    'DIAGNOSTIC FINAL\nDiagnostic : '+valueOrNR(fields.diagnosis)+'\nTransport : '+valueOrNR(fields.transport)+' | Destination : '+valueOrNR(fields.destination)
+  ].join('\n\n');
+  ui.copy.disabled=busy||!Object.values(fields).some(el=>el.value.trim());
 }
 
 async function analyzeFile(file){
   if(busy)return;
   cancelAutoRefresh();
-  clearCategories();
   clearEasterEgg();
   ui.progressPanel.classList.add('is-idle');
   resetProgress();
@@ -756,24 +674,12 @@ async function analyzeFile(file){
     currentPdf=await pdfjsLib.getDocument({data:new Uint8Array(bytes)}).promise;
     ui.pageCount.textContent=String(currentPdf.numPages);
     const pages=await extractNativePages(currentPdf);
-    for (const page of pages.filter(p=>!p.text.trim())) {
-      addAlert('Page ' + page.number + ' sans texte : lecture OCR à vérifier.');
-      const canvas = await renderPageToCanvas(page.page, 2);
-      const worker = await getOCRWorker();
-      await worker.setParameters({tessedit_pageseg_mode:'3',preserve_interword_spaces:'1',tessedit_char_whitelist:''});
-      const {data} = await worker.recognize(canvas);
-      page.lines = (data.text || '').split(/\n/).map(text=>({text:cleanText(text),items:[]})).filter(l=>l.text);
-      page.text = page.lines.map(l=>l.text).join('\n');
-      canvas.width = canvas.height = 0;
-      if (!page.text) page.lines = [{text:'⚠ Page sans texte lisible — vérifier le PDF original.',items:[]}];
-    }
     const base={address:extractAddress(pages),identity:extractIdentity(pages),...extractAnamnesisParts(pages),...extractFinalDetails(pages),params:'NR',admin:'NR'};
     const surv=pages.find(p=>normalize(p.text).includes(normalize("Surveillance du patient pendant l'intervention")));
     if(surv){
       try{const s=await readSurveillance(surv.page);base.params=s.params;base.admin=s.admin;}
       catch(e){console.error(e);addAlert('Tableau de surveillance détecté mais lecture OCR interrompue : '+e.message,'error');base.params=NON_LU;base.admin=NON_LU;}
     }
-    buildDocumentCategories(pages);
     updateFields(base);
     setStatus('Données prêtes à vérifier · remise à zéro dans 5 min',100,'status-ok');
     scheduleAutoRefresh();
@@ -795,7 +701,6 @@ async function copyResult(){
 }
 async function resetAll(){
   cancelAutoRefresh();
-  clearCategories();
   clearEasterEgg();
   if(ocrWorker){try{await ocrWorker.terminate();}catch(_){}ocrWorker=null;} if(currentPdf){try{await currentPdf.destroy();}catch(_){}} currentPdf=null; clearAlerts(); ui.fileInput.value='';ui.fileName.textContent='Aucun fichier';ui.pageCount.textContent='-';
   resetProgress();
@@ -808,6 +713,7 @@ ui.fileInput.addEventListener('change',e=>{if(e.target.files&&e.target.files[0])
 for(const ev of ['dragenter','dragover'])ui.dropzone.addEventListener(ev,e=>{e.preventDefault();ui.dropzone.classList.add('dragover');});
 for(const ev of ['dragleave','drop'])ui.dropzone.addEventListener(ev,e=>{e.preventDefault();ui.dropzone.classList.remove('dragover');});
 ui.dropzone.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)analyzeFile(f);});
-for(const el of Object.values(fields))el.addEventListener('input',regenerate); regenerate(); ui.copy.addEventListener('click',copyResult); ui.reset.addEventListener('click',resetAll);
+for(const el of Object.values(fields))el.addEventListener('input',regenerate); ui.copy.addEventListener('click',copyResult); ui.reset.addEventListener('click',resetAll);
 
 })();
+

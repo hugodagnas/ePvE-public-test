@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {extractDocumentSections:extract}=require('../static/document-sections.js');
-const {extractOptionalFields:optional}=require('../static/document-sections.js');
+const {extractDocumentSections:extract}=require('../travail/static/document-sections.js');
+const {extractOptionalFields:optional}=require('../travail/static/document-sections.js');
 function line(y,...items) {
   return {y,text:items.map(i=>i.str).join(' '),items:items.map(i=>({w:70,...i,y}))};
 }
@@ -49,7 +49,7 @@ test('optional fields exclude the mandatory identity/address/vector and split pa
   assert.equal(fields[0].group,'Identité');
 });
 test('requested compound fields are merged within their page and section only',()=>{
-  const {mergeOptionalFields:merge}=require('../static/document-sections.js');
+  const {mergeOptionalFields:merge}=require('../travail/static/document-sections.js');
   const field=(title,value,section='Requérant',page=1)=>({title,lines:[value],section,page});
   const result=merge([
     field('Nom du requérant','Dupont'),field('Prénom du requérant','Marie'),field('Type de requérant','Famille'),
@@ -64,7 +64,7 @@ test('requested compound fields are merged within their page and section only',(
   assert(!result.some(f=>['IMC','Nom du requérant','Prénom du requérant','Type de requérant','Heure du 1er appel'].includes(f.title)));
 });
 test('normalization removes metadata and empty duplicates, but keeps negative medical answers',()=>{
-  const {cleanOptionalFields:clean}=require('../static/document-sections.js');
+  const {cleanOptionalFields:clean}=require('../travail/static/document-sections.js');
   const field=(title,value)=>({title,lines:[value],group:'Médical'});
   const fields=clean([
     field('Autres précisions — Ventilation','par Équipe 3'),

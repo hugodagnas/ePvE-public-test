@@ -4,6 +4,24 @@ Version autonome et sans authentification du convertisseur PARSYS vers EXOS.
 Elle ne dépend ni du HUB Medi15, ni d'une API, ni d'une base de données.
 Le PDF est traité dans le navigateur et n'est pas envoyé au serveur.
 
+## Sélectionner la version
+
+L'accueil `/` propose deux parcours indépendants :
+
+- `/stable/` : V1 issue de la première publication autonome (`ffb25ff`). Son
+  extraction et ses champs initiaux sont conservés. Seuls les chemins des ressources
+  et le lien de retour à l'accueil ont été adaptés.
+- `/travail/` : version de travail actuelle avec les compléments et la visualisation.
+  Les prochaines évolutions concernent cette version, sauf demande explicite de
+  modifier la stable.
+
+Les bibliothèques PDF/OCR sous `static/vendor` et le système visuel sous `ui`
+sont partagés. Le code et les styles propres à chaque version restent dans son
+répertoire. Le lien « Changer de version » ramène à l'accueil sans transmettre
+le PDF ni les résultats à l'autre version.
+
+La description ci-dessous concerne la version de travail.
+
 ## Choisir le contenu à copier
 
 Les 11 champs initiaux constituent un socle obligatoire, toujours inclus dans la

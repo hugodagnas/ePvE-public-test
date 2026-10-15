@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ePvE · Version de travail</title>
+  <link rel="icon" type="image/png" href="../ui/medi15-logo.png">
+  <link rel="stylesheet" href="../ui/medi15.css">
+  <link rel="stylesheet" href="./static/app.css?v=full-19">
+  <script src="./static/document-sections.js?v=full-19" defer></script>
+  <script src="./static/converter.js?v=full-19" defer></script>
+</head>
+<body>
+<header class="medi15-topbar"><div class="medi15-brand"><img class="medi15-brand-logo" src="../ui/medi15-logo.png" alt=""><span>Medi15</span></div><span class="medi15-app-name">ePvE · Version de travail</span><nav class="medi15-nav"><a href="../">Changer de version</a></nav></header>
+<main>
+<header>
+  <div class="eyebrow">CONVERTISSEUR DE BILAN</div><h1>Du bilan PARSYS au texte EXOS</h1>
+  <p>Importez le bilan, vérifiez les données, puis copiez-les dans EXOS.</p>
+</header>
+
+<div class="workspace"><div class="editor-column">
+<section class="card">
+  <h2><span class="step">1</span> Importer le bilan</h2>
+  <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Sélectionner un PDF PARSYS">
+    <strong>Glisser-déposer le PDF PARSYS</strong>
+    ou cliquer pour sélectionner le fichier
+    <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden>
+  </div>
+  <div class="actions import-actions"><button class="primary" id="copyBtn" disabled>Copier dans EXOS</button><button class="ghost" id="resetBtn">Réinitialiser</button></div>
+  <div class="import-status"><span id="fileName">Aucun fichier</span><span id="status" role="status" aria-live="polite">En attente</span></div>
+  <span id="pageCount" hidden></span>
+  <div id="progressPanel" class="progress-panel is-idle">
+    <div class="progress-meta"><span>Progression de l’analyse</span><strong id="progressPercent">0 %</strong></div>
+    <div id="progressTrack" class="progress-track" role="progressbar" aria-label="Progression de l’analyse" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progressBar" class="progress-fill"></div>
+      <button type="button" id="progressHandle" class="progress-arrow" aria-label="Marqueur de progression">➜</button>
+      <div id="timeTravel" class="time-travel" aria-hidden="true">
+        <div class="time-travel-vehicle">
+          <svg viewBox="0 0 120 50" focusable="false">
+            <path class="time-car-body" d="M6 29h13l13-15h50l18 15h12v11H6z"/>
+            <path class="time-car-window" d="M35 17h21v12H25zm25 0h19l15 12H60z"/>
+            <path class="time-car-detail" d="M10 34h98M57 18v17"/>
+            <circle class="time-car-wheel" cx="31" cy="40" r="7"/>
+            <circle class="time-car-wheel" cx="88" cy="40" r="7"/>
+            <circle class="time-car-hub" cx="31" cy="40" r="2"/>
+            <circle class="time-car-hub" cx="88" cy="40" r="2"/>
+            <path class="time-car-light" d="M107 29h6v5h-6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="alertBox" class="card alerts">
+  <h2>Points à vérifier</h2>
+  <div id="alertsList"></div>
+</section>
+
+<section class="card" id="essentialSection" hidden><h2><span class="step">2</span> Champs obligatoires</h2><p class="selection-help">Les champs initiaux sont toujours inclus dans la copie, en lecture seule.</p><section class="mandatory-group"><h3>Identité</h3><div class="grid"><div class="field full"><label for="f-identity">Identité du patient</label><textarea rows="1" id="f-identity"></textarea></div></div></section><section class="mandatory-group"><h3>Intervention</h3><div class="grid"><div class="field"><label for="f-address">Adresse d’intervention</label><textarea rows="1" id="f-address"></textarea></div><div class="field"><label for="f-vehicle">Type de vecteur SMUR</label><textarea rows="1" id="f-vehicle"></textarea></div></div></section><section class="mandatory-group"><h3>Médical</h3><div class="grid"><div class="field"><label for="f-history">Antécédents</label><textarea rows="1" id="f-history"></textarea></div><div class="field"><label for="f-usual">Traitement habituel</label><textarea rows="1" id="f-usual"></textarea></div><div class="field full"><label for="f-anamnesis">Anamnèse</label><textarea rows="1" id="f-anamnesis"></textarea></div><div class="field"><label for="f-params">Paramètres</label><textarea rows="1" id="f-params"></textarea></div><div class="field"><label for="f-admin">Traitements administrés</label><textarea rows="1" id="f-admin"></textarea></div><div class="field full"><label for="f-diagnosis">Diagnostic</label><textarea rows="1" id="f-diagnosis"></textarea></div></div></section><section class="mandatory-group"><h3>Transport et orientation</h3><div class="grid"><div class="field"><label for="f-transport">Transport</label><textarea rows="1" id="f-transport"></textarea></div><div class="field"><label for="f-destination">Destination</label><textarea rows="1" id="f-destination"></textarea></div></div></section></section>
+<section id="documentSection" class="card" hidden>
+  <h2><span class="step">2</span> Éléments complémentaires</h2>
+  <p class="selection-help">Cochez uniquement les informations à ajouter aux champs obligatoires. Le contenu s’affiche après sélection.</p>
+  <div class="actions selection-actions"><button type="button" class="ghost" id="selectAll">Ajouter tous les compléments</button><button type="button" class="ghost" id="selectNone">Retirer les compléments</button></div>
+  <div id="documentCategories"></div>
+</section>
+</div><aside class="preview-column"><section class="card preview-card"><h2><span class="step">3</span> Visualisation EXOS</h2><p class="selection-help">Cet aperçu contient exactement le texte qui sera copié.</p>
+<p id="selectionCount" role="status"></p><textarea id="resultat" aria-label="Texte pour EXOS" readonly></textarea>
+</section></aside></div>
+
+</main>
+<footer class="medi15-footer"><div class="medi15-footer-brand"><img class="medi15-footer-logo" src="../ui/medi15-logo.png" alt=""><span>Medi15</span></div><div class="medi15-footer-copy">Le numérique au service de l’urgence</div></footer>
+</body>
+</html>
+
+

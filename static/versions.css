@@ -1,0 +1,14 @@
+main { width: min(100% - 40px, 960px); margin: 72px auto 80px; }
+.eyebrow { margin: 0 0 12px; color: var(--medi15-accent); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+h1 { margin: 0 0 12px; color: var(--medi15-nav); font-size: clamp(27px,4vw,38px); line-height: 1.2; }
+.intro { margin: 0 0 32px; color: var(--medi15-muted); }
+.version-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; }
+.version-card { display: flex; flex-direction: column; align-items: start; padding: 30px; border: 1px solid var(--medi15-line); border-top: 4px solid var(--medi15-accent); border-radius: 12px; background: white; color: var(--medi15-ink); text-decoration: none; box-shadow: var(--medi15-shadow-sm); }
+.version-card:hover { text-decoration: none; border-color: var(--medi15-accent); box-shadow: var(--medi15-shadow-md); }
+.version-card.work { border-top-color: #c8871a; }
+.badge { padding: 4px 10px; border-radius: 20px; background: var(--medi15-accent-soft); color: var(--medi15-accent-strong); font-size: 12px; font-weight: 700; }
+.work .badge { background: #fff3d9; color: #80540f; }
+h2 { margin: 20px 0 10px; color: var(--medi15-nav); font-size: 22px; }
+.version-card p { margin: 0 0 28px; color: var(--medi15-muted); font-size: 14px; }
+.open { margin-top: auto; color: var(--medi15-accent-strong); font-size: 14px; font-weight: 800; }
+@media(max-width:650px) { main { margin-top: 38px; } .version-grid { grid-template-columns: 1fr; } .version-card { padding: 24px; } }
