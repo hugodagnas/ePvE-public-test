@@ -660,25 +660,6 @@ for(const [key,field] of Object.entries(fields)) {
   field.setAttribute('aria-label',fieldTitles[key]);
   field.readOnly=true;
 }
-const fieldDialog=document.createElement('dialog');
-fieldDialog.className='field-dialog';
-const dialogTitle=document.createElement('h2'); dialogTitle.id='fieldDialogTitle';
-fieldDialog.setAttribute('aria-labelledby',dialogTitle.id);
-const dialogValue=document.createElement('p'); dialogValue.className='field-dialog-value';
-const closeDialog=document.createElement('button');closeDialog.type='button';closeDialog.textContent='Fermer';
-closeDialog.addEventListener('click',()=>fieldDialog.close());
-fieldDialog.append(dialogTitle,dialogValue,closeDialog);document.body.append(fieldDialog);
-function addFieldReader(field, title) {
-  const container=field.closest('.field');
-  const label=container.querySelector('label');
-  label.title=title;
-  const reader=document.createElement('button');reader.type='button';reader.className='field-reader';
-  reader.textContent='↗';reader.setAttribute('aria-label','Lire : '+title);reader.title='Lire le contenu complet';
-  reader.addEventListener('click',()=>{
-    dialogTitle.textContent=title;dialogValue.textContent=field.value.trim() || 'NR';fieldDialog.showModal();
-  });container.append(reader);
-}
-for(const [key,field] of Object.entries(fields)) addFieldReader(field,fieldTitles[key]);
 function clearCategories() {
   extraCategories.length = 0;
   $('documentCategories').replaceChildren();
@@ -717,7 +698,6 @@ function buildDocumentCategories(pages) {
       note.textContent='Lecture brute à comparer au PDF original'; container.append(note);
     }
     group.append(container);
-    addFieldReader(text,category.title);
   }
   $('documentSection').hidden = false;
   requestAnimationFrame(fitAllEditors);
@@ -725,7 +705,8 @@ function buildDocumentCategories(pages) {
 function fitEditor(el) {
   if (!el.getClientRects().length) return;
   el.title=el.value;
-  el.style.height='34px';
+  el.style.height='0px';
+  el.style.height=el.scrollHeight+'px';
 }
 function fitAllEditors() { for (const el of [...Object.values(fields), ...extraCategories.map(c=>c.field)]) if(el) fitEditor(el); }
 document.addEventListener('toggle', fitAllEditors, true);

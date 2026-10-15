@@ -35,11 +35,14 @@ les champs Paramètres et Traitements administrés via OCR local.
 L'aperçu est affiché à côté des champs sur ordinateur et sous les champs sur mobile.
 Les champs utilisent un affichage compact sans indication de provenance ni numéro
 de page ; la sélection et la copie restent disponibles.
-Toutes les capsules ont la même hauteur de 64 px et les mêmes colonnes de
-libellé et de valeur. Le bouton ↗ ouvre le contenu intégral dans une fenêtre de
-lecture. La copie utilise toujours les valeurs complètes. Les libellés courants
+Les compléments affichent leur contenu intégral directement, avec une hauteur
+adaptée et les mêmes colonnes de libellé et de valeur. Aucun bouton de lecture
+ni fenêtre supplémentaire n'est nécessaire. La copie utilise les valeurs complètes. Les libellés courants
 sont harmonisés ; les valeurs vides, mentions d'auteur résiduelles et doublons
 exacts sont retirés des compléments. Les réponses négatives restent conservées.
+L'ajout du PDF et le bouton « Copier dans EXOS » sont en haut de la colonne de
+gauche ; les compléments sont proposés en dessous. Le socle obligatoire n'est
+plus affiché à gauche mais reste inclus dans la visualisation et dans la copie.
 
 Tests du classement : `node --test tests/document-sections.test.cjs`.
 
