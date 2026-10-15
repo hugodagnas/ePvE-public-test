@@ -733,8 +733,8 @@ function regenerate(){
 for (const [id, checked] of [['selectAll',true],['selectNone',false]]) {
   $(id).addEventListener('click', () => {
     for (const category of extraCategories) { category.checkbox.checked=checked; category.field.hidden=!checked; }
-    fitAllEditors();
     regenerate();
+    fitAllEditors();
   });
 }
 
