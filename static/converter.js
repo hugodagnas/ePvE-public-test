@@ -704,7 +704,8 @@ function buildDocumentCategories(pages) {
 }
 function fitEditor(el) {
   if (!el.getClientRects().length) return;
-  el.style.height = 'auto'; el.style.height = Math.max(28, el.scrollHeight + 2) + 'px';
+  el.style.height = '0px';
+  el.style.height = el.scrollHeight + 'px';
 }
 function fitAllEditors() { for (const el of [...Object.values(fields), ...extraCategories.map(c=>c.field)]) if(el) fitEditor(el); }
 document.addEventListener('toggle', fitAllEditors, true);
