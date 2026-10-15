@@ -6,8 +6,8 @@
   <title>ePvE · Medi15</title>
   <link rel="icon" type="image/png" href="./ui/medi15-logo.png">
   <link rel="stylesheet" href="./ui/medi15.css">
-  <link rel="stylesheet" href="./static/app.css?v=time-travel-9">
-  <script src="./static/converter.js?v=siren-10" defer></script>
+  <link rel="stylesheet" href="./static/app.css?v=categories-11">
+  <script src="./static/converter.js?v=categories-11" defer></script>
 </head>
 <body>
 <header class="medi15-topbar"><div class="medi15-brand"><img class="medi15-brand-logo" src="./ui/medi15-logo.png" alt=""><span>Medi15</span></div><span class="medi15-app-name">ePvE · Test public</span></header>
@@ -55,7 +55,9 @@
 </section>
 
 <section class="card">
-  <h2>Données à extraire</h2>
+  <h2>Éléments à copier</h2>
+  <p class="selection-help">Cochez les éléments souhaités et vérifiez leur contenu avant de copier.</p>
+  <div class="actions selection-actions"><button type="button" class="ghost" id="selectAll">Tout sélectionner</button><button type="button" class="ghost" id="selectNone">Tout désélectionner</button><span id="selectionCount" role="status"></span></div>
   <div class="grid">
     <div class="field"><label for="f-vehicle">Indicatif du véhicule</label><textarea rows="1" id="f-vehicle"></textarea></div>
     <div class="field"><label for="f-address">Adresse d’intervention</label><textarea rows="1" id="f-address"></textarea></div>
@@ -75,11 +77,18 @@
     <div class="field"><label for="f-destination">Destination</label><textarea rows="1" id="f-destination"></textarea></div>
   </div>
 </section>
+<section id="documentSection" class="card" hidden>
+  <h2>Rubriques du document complet</h2>
+  <p class="selection-help">Texte du PDF classé par rubrique et par page. Ces rubriques peuvent recouper les champs ci-dessus. Les tableaux sont présentés en texte brut : vérifiez les valeurs dans le PDF original.</p>
+  <details><summary>Afficher et sélectionner les rubriques du PDF</summary><div id="documentCategories" class="grid"></div></details>
+</section>
+<section class="card"><details><summary>Aperçu du texte à copier</summary>
+<textarea id="resultat" aria-label="Texte pour EXOS" readonly></textarea></details></section>
 <div class="actions action-bar">
   <button class="primary" id="copyBtn" disabled>Copier pour EXOS</button>
   <button class="ghost" id="resetBtn">Réinitialiser</button>
 </div>
-<textarea id="resultat" aria-label="Texte pour EXOS" tabindex="-1" style="position:fixed;left:-10000px;top:0;width:1px;height:1px;min-height:0"></textarea>
+
 </main>
 <footer class="medi15-footer"><div class="medi15-footer-brand"><img class="medi15-footer-logo" src="./ui/medi15-logo.png" alt=""><span>Medi15</span></div><div class="medi15-footer-copy">Le numérique au service de l’urgence</div></footer>
 </body>

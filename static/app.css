@@ -61,3 +61,13 @@ main > header p { margin: 0; color: var(--medi15-muted); font-size: 14px; }
 .actions .primary { background: var(--medi15-accent); color: #fff; }
 .actions .ghost { background: #e8edf2; color: var(--medi15-ink); }
 @media (max-width: 700px) { main { width: min(100% - 24px, 1040px); margin-top: 16px; } .card { padding: 14px; } .grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .import-status { flex-wrap: wrap; } }
+
+[hidden] { display: none !important; }
+.field label input[type="checkbox"] { width: 17px; height: 17px; margin: 0 7px 0 0; vertical-align: middle; accent-color: var(--medi15-accent); }
+.selection-help { margin: 0 0 12px; color: var(--medi15-muted); font-size: 13px; }
+.selection-actions { flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+#selectionCount { color: var(--medi15-muted); font-size: 13px; }
+summary { cursor: pointer; color: var(--medi15-accent-strong); font-weight: 700; }
+details[open] > summary { margin-bottom: 14px; }
+#resultat { width: 100%; min-height: 180px; padding: 10px; border: 1px solid var(--medi15-line); border-radius: 7px; font: 14px/1.5 var(--medi15-font); resize: vertical; scrollbar-width: none; }
+#resultat::-webkit-scrollbar { display: none; }

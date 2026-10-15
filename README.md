@@ -4,6 +4,21 @@ Version autonome et sans authentification du convertisseur PARSYS vers EXOS.
 Elle ne dépend ni du HUB Medi15, ni d'une API, ni d'une base de données.
 Le PDF est traité dans le navigateur et n'est pas envoyé au serveur.
 
+## Choisir le contenu à copier
+
+Les champs EXOS sont présélectionnés. Chaque champ peut être modifié et décoché.
+La section « Rubriques du document complet » donne accès au texte de toutes les
+pages, découpé selon les titres PARSYS reconnus. Les éléments sans titre reconnu
+restent dans un bloc de la page correspondante. Les rubriques supplémentaires
+sont décochées au départ pour éviter les doublons avec les champs EXOS.
+
+L'aperçu affiche exactement la sélection à copier. « Tout sélectionner » et
+« Tout désélectionner » agissent sur les champs et les rubriques supplémentaires.
+Les pages sans couche de texte sont lues par OCR local et doivent être vérifiées.
+Les tableaux du document complet sont du texte brut : leur ordre et leurs valeurs
+doivent être comparés au PDF original. L'extraction structurée des derniers
+paramètres et des traitements administrés reste disponible dans les champs EXOS.
+
 ## Publication sur GitHub Pages
 
 1. Créer un dépôt GitHub vide.

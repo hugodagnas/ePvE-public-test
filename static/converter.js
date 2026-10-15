@@ -45,7 +45,7 @@ let travelCleanupTimer = null;
 let sirenSound = null;
 let statusBeforeTravel = '';
 let statusClassBeforeTravel = '';
-function setBusy(value){busy=value;ui.reset.disabled=value;ui.fileInput.disabled=value;ui.dropzone.setAttribute('aria-disabled',String(value));ui.copy.disabled=value||!Object.values(fields).some(el=>el.value.trim());ui.progressPanel.classList.toggle('is-loading',value);if(!value&&progressValue<100)ui.progressPanel.classList.add('is-idle');}
+function setBusy(value){busy=value;ui.reset.disabled=value;ui.fileInput.disabled=value;ui.dropzone.setAttribute('aria-disabled',String(value));regenerate();ui.progressPanel.classList.toggle('is-loading',value);if(!value&&progressValue<100)ui.progressPanel.classList.add('is-idle');}
 
 function paintProgress(value) {
   visualProgress = Math.round(Math.max(0, Math.min(100, value)));
@@ -643,24 +643,96 @@ function updateFields(data){
   regenerate();
 }
 function valueOrNR(el){const v=el.value.trim();return v||'NR';}
+const extraCategories = [];
+const fieldTitles = {
+  vehicle:'Indicatif du véhicule', address:'Adresse d’intervention', identity:'Identité',
+  history:'Antécédents', usual:'Traitement habituel', params:'Paramètres',
+  admin:'Traitements administrés', anamnesis:'Anamnèse', diagnosis:'Diagnostic',
+  transport:'Transport', destination:'Destination'
+};
+const selection = new Map();
+for (const [key, field] of Object.entries(fields)) {
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox'; checkbox.checked = true;
+  checkbox.setAttribute('aria-label', 'Inclure : ' + fieldTitles[key]);
+  field.previousElementSibling.prepend(checkbox);
+  selection.set(key, checkbox);
+  checkbox.addEventListener('change', regenerate);
+}
+function clearCategories() {
+  extraCategories.length = 0;
+  $('documentCategories').replaceChildren();
+  $('documentSection').hidden = true;
+  for (const checkbox of selection.values()) checkbox.checked = true;
+}
+// Split at recognised PARSYS section headings. Unknown material remains available
+// in the current section or in a page block, so no page is silently discarded.
+function buildDocumentCategories(pages) {
+  const headings = new Set([
+    'Volet administratif','Régulation médicale',"Lieu d'intervention",'Événement',
+    'Requérant','Déclenchement SMUR','Patient','Volet médical','Anamnèse',
+    'Antécédents','Traitements en cours','Mode de vie','Mensurations','Examen clinique',
+    'Diagnostic final','Diagnostique final','Diagnostic','Transport','Admission',
+    "Surveillance du patient pendant l'intervention",
+    'Examens complémentaires et Évolution médicale','Examens complémentaires',
+    'Évolution médicale','Ventilation',"Voies d'abord",'Signature du médecin','Notes'
+  ].map(normalize));
+  for (const page of pages) {
+    let block = null;
+    for (const line of page.lines) {
+      if (headings.has(normalize(line.text))) {
+        block = {title:line.text, page:page.number, lines:[]};
+        extraCategories.push(block);
+      } else {
+        if (!block) {
+          block = {title:'Autres éléments du document', page:page.number, lines:[]};
+          extraCategories.push(block);
+        }
+        block.lines.push(line.text);
+      }
+    }
+  }
+  for (const category of extraCategories) {
+    const container = document.createElement('div'); container.className = 'field full document-category';
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
+    const id = 'document-category-' + extraCategories.indexOf(category);
+    label.htmlFor = id;
+    checkbox.setAttribute('aria-label', 'Inclure : ' + category.title + ' · page ' + category.page);
+    label.append(checkbox, document.createTextNode(category.title + ' · page ' + category.page));
+    const text = document.createElement('textarea'); text.id = id; text.rows = 1;
+    text.value = category.lines.join('\n') || 'NR';
+    category.checkbox = checkbox; category.field = text;
+    checkbox.addEventListener('change', regenerate); text.addEventListener('input', regenerate);
+    container.append(label, text); $('documentCategories').append(container);
+  }
+  $('documentSection').hidden = false;
+}
 function regenerate(){
-  ui.result.value = [
-    "INDICATIF DU VÉHICULE\n"+valueOrNR(fields.vehicle),
-    "ADRESSE D'INTERVENTION\n"+valueOrNR(fields.address),
-    'IDENTITE\n'+valueOrNR(fields.identity),
-    'ANTECEDENTS\n'+valueOrNR(fields.history),
-    'TRAITEMENT HABITUEL\n'+valueOrNR(fields.usual),
-    'PARAMETRES\n'+valueOrNR(fields.params),
-    'TRAITEMENTS ADMINISTRES\n'+valueOrNR(fields.admin),
-    'ANAMNESE\n'+valueOrNR(fields.anamnesis),
-    'DIAGNOSTIC FINAL\nDiagnostic : '+valueOrNR(fields.diagnosis)+'\nTransport : '+valueOrNR(fields.transport)+' | Destination : '+valueOrNR(fields.destination)
-  ].join('\n\n');
-  ui.copy.disabled=busy||!Object.values(fields).some(el=>el.value.trim());
+  const blocks = [];
+  for (const [key, title] of Object.entries(fieldTitles)) {
+    if (selection.get(key).checked) blocks.push(title.toUpperCase() + '\n' + valueOrNR(fields[key]));
+  }
+  for (const category of extraCategories) {
+    if (category.checkbox?.checked) blocks.push(category.title.toUpperCase() + ' · PAGE ' + category.page + '\n' + valueOrNR(category.field));
+  }
+  ui.result.value = blocks.join('\n\n');
+  const count = [...selection.values(), ...extraCategories.map(c=>c.checkbox)].filter(c=>c?.checked).length;
+  $('selectionCount').textContent = count + ' élément' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 's' : '');
+  const hasSelectedContent = Object.entries(fields).some(([key,el])=>selection.get(key).checked && el.value.trim()) || extraCategories.some(c=>c.checkbox?.checked && c.field.value.trim());
+  ui.copy.disabled = busy || !hasSelectedContent;
+}
+for (const [id, checked] of [['selectAll',true],['selectNone',false]]) {
+  $(id).addEventListener('click', () => {
+    for (const checkbox of [...selection.values(), ...extraCategories.map(c=>c.checkbox)]) checkbox.checked = checked;
+    regenerate();
+  });
 }
 
 async function analyzeFile(file){
   if(busy)return;
   cancelAutoRefresh();
+  clearCategories();
   clearEasterEgg();
   ui.progressPanel.classList.add('is-idle');
   resetProgress();
@@ -674,6 +746,18 @@ async function analyzeFile(file){
     currentPdf=await pdfjsLib.getDocument({data:new Uint8Array(bytes)}).promise;
     ui.pageCount.textContent=String(currentPdf.numPages);
     const pages=await extractNativePages(currentPdf);
+    for (const page of pages.filter(p=>!p.text.trim())) {
+      addAlert('Page ' + page.number + ' sans texte : lecture OCR à vérifier.');
+      const canvas = await renderPageToCanvas(page.page, 2);
+      const worker = await getOCRWorker();
+      await worker.setParameters({tessedit_pageseg_mode:'3',preserve_interword_spaces:'1',tessedit_char_whitelist:''});
+      const {data} = await worker.recognize(canvas);
+      page.lines = (data.text || '').split(/\n/).map(text=>({text:cleanText(text),items:[]})).filter(l=>l.text);
+      page.text = page.lines.map(l=>l.text).join('\n');
+      canvas.width = canvas.height = 0;
+      if (!page.text) page.lines = [{text:'⚠ Page sans texte lisible — vérifier le PDF original.',items:[]}];
+    }
+    buildDocumentCategories(pages);
     const base={address:extractAddress(pages),identity:extractIdentity(pages),...extractAnamnesisParts(pages),...extractFinalDetails(pages),params:'NR',admin:'NR'};
     const surv=pages.find(p=>normalize(p.text).includes(normalize("Surveillance du patient pendant l'intervention")));
     if(surv){
@@ -701,6 +785,7 @@ async function copyResult(){
 }
 async function resetAll(){
   cancelAutoRefresh();
+  clearCategories();
   clearEasterEgg();
   if(ocrWorker){try{await ocrWorker.terminate();}catch(_){}ocrWorker=null;} if(currentPdf){try{await currentPdf.destroy();}catch(_){}} currentPdf=null; clearAlerts(); ui.fileInput.value='';ui.fileName.textContent='Aucun fichier';ui.pageCount.textContent='-';
   resetProgress();
@@ -713,7 +798,6 @@ ui.fileInput.addEventListener('change',e=>{if(e.target.files&&e.target.files[0])
 for(const ev of ['dragenter','dragover'])ui.dropzone.addEventListener(ev,e=>{e.preventDefault();ui.dropzone.classList.add('dragover');});
 for(const ev of ['dragleave','drop'])ui.dropzone.addEventListener(ev,e=>{e.preventDefault();ui.dropzone.classList.remove('dragover');});
 ui.dropzone.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)analyzeFile(f);});
-for(const el of Object.values(fields))el.addEventListener('input',regenerate); ui.copy.addEventListener('click',copyResult); ui.reset.addEventListener('click',resetAll);
+for(const el of Object.values(fields))el.addEventListener('input',regenerate); regenerate(); ui.copy.addEventListener('click',copyResult); ui.reset.addEventListener('click',resetAll);
 
 })();
-
