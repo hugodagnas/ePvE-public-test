@@ -646,33 +646,27 @@ function updateFields(data){
 function valueOrNR(el){const v=el.value.trim();return v||'NR';}
 const extraCategories = [];
 const fieldTitles = {
-  vehicle:'Type de vecteur SMUR', address:'Adresse d’intervention', identity:'Identité',
+  vehicle:'Type de vecteur SMUR', address:'Adresse d’intervention', identity:'Patient',
   history:'Antécédents', usual:'Traitement habituel', params:'Paramètres',
   admin:'Traitements administrés', anamnesis:'Anamnèse', diagnosis:'Diagnostic',
   transport:'Transport', destination:'Destination'
 };
-const selection = new Map();
-for (const [key, field] of Object.entries(fields)) {
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox'; checkbox.checked = true;
-  checkbox.setAttribute('aria-label', 'Inclure : ' + fieldTitles[key]);
-  checkbox.id = 'include-' + key;
-  field.previousElementSibling.htmlFor = checkbox.id;
-  field.setAttribute('aria-label', fieldTitles[key]);
-  field.previousElementSibling.prepend(checkbox);
-  selection.set(key, checkbox);
-  checkbox.addEventListener('change', regenerate);
-}
+const mandatoryGroups = {
+  'Identité':['identity'], 'Intervention':['address','vehicle'],
+  'Médical':['history','usual','anamnesis','params','admin','diagnosis'],
+  'Transport et orientation':['transport','destination']
+};
+for(const [key,field] of Object.entries(fields)) field.setAttribute('aria-label',fieldTitles[key]);
 function clearCategories() {
   extraCategories.length = 0;
   $('documentCategories').replaceChildren();
   $('documentSection').hidden = true;
-  for (const checkbox of selection.values()) checkbox.checked = true;
+
 }
 // Split at recognised PARSYS section headings. Unknown material remains available
 // in the current section or in a page block, so no page is silently discarded.
 function buildDocumentCategories(pages) {
-  extraCategories.push(...extractDocumentSections(pages));
+  extraCategories.push(...extractOptionalFields(pages));
   for (const category of extraCategories) {
     const container = document.createElement('div'); container.className = 'field full document-category';
     const label = document.createElement('label');
@@ -680,20 +674,23 @@ function buildDocumentCategories(pages) {
     const id = 'document-category-' + extraCategories.indexOf(category);
     label.htmlFor = id + '-selected'; checkbox.id = id + '-selected';
     checkbox.setAttribute('aria-label', 'Inclure : ' + category.title + ' · page ' + category.page);
-    label.append(checkbox, document.createTextNode(category.title + ' · page ' + category.page));
+    label.append(checkbox, document.createTextNode(category.title));
     const text = document.createElement('textarea'); text.id = id; text.rows = 1;
     text.value = category.lines.join('\n') || 'NR';
     text.setAttribute('aria-label', category.title + ' · page ' + category.page);
     text.addEventListener('input', () => fitEditor(text));
     category.checkbox = checkbox; category.field = text;
-    checkbox.addEventListener('change', regenerate); text.addEventListener('input', regenerate);
+    checkbox.addEventListener('change', () => { text.hidden=!checkbox.checked; regenerate(); fitEditor(text); }); text.addEventListener('input', regenerate);
+    text.hidden=true;
     container.append(label, text);
-    let group = document.querySelector('[data-document-page="' + category.page + '"]');
+    let group = [...$('documentCategories').children].find(el=>el.dataset.categoryGroup===category.group);
     if (!group) {
-      group = document.createElement('details'); group.dataset.documentPage = category.page; group.open = true;
-      const summary = document.createElement('summary'); summary.textContent = 'Page ' + category.page;
-      group.append(summary); $('documentCategories').append(group);
+      group = document.createElement('section'); group.dataset.categoryGroup=category.group;
+      const title=document.createElement('h3'); title.textContent=category.group;
+      group.append(title); $('documentCategories').append(group);
     }
+    const source=document.createElement('small'); source.className='field-source';
+    source.textContent=category.section+' · page '+category.page; container.append(source);
     if (category.uncertain) {
       const note=document.createElement('p'); note.className='source-note';
       note.textContent='Lecture brute à comparer au PDF original'; container.append(note);
@@ -713,23 +710,26 @@ window.addEventListener('resize', fitAllEditors);
 for(const field of Object.values(fields)) field.addEventListener('input',()=>fitEditor(field));
 function regenerate(){
   const blocks = [];
-  for (const [key, title] of Object.entries(fieldTitles)) {
-    if (selection.get(key).checked) blocks.push(title.toUpperCase() + '\n' + valueOrNR(fields[key]));
+  for(const [group,keys] of Object.entries(mandatoryGroups)) {
+    const content=keys.map(key=>fieldTitles[key].toUpperCase()+'\n'+valueOrNR(fields[key]));
+    const extras=extraCategories.filter(c=>c.group===group && c.checkbox?.checked);
+    for(const category of extras) content.push(category.title.toUpperCase()+'\n'+valueOrNR(category.field));
+    blocks.push(group.toUpperCase()+'\n\n'+content.join('\n\n'));
   }
-  for (const category of extraCategories) {
-    if (category.checkbox?.checked) blocks.push(category.title.toUpperCase() + ' · PAGE ' + category.page + '\n' + valueOrNR(category.field));
-  }
-  for(const [key,field] of Object.entries(fields)) field.closest('.field').classList.toggle('is-excluded', !selection.get(key).checked);
-  for(const category of extraCategories) category.field.closest('.field').classList.toggle('is-excluded', !category.checkbox.checked);
+  const others=extraCategories.filter(c=>!mandatoryGroups[c.group] && c.checkbox?.checked);
+  if(others.length) blocks.push('AUTRES INFORMATIONS\n\n'+others.map(c=>c.title.toUpperCase()+'\n'+valueOrNR(c.field)).join('\n\n'));
+  for(const category of extraCategories) category.field.closest('.field').classList.toggle('is-excluded',!category.checkbox.checked);
   ui.result.value = blocks.join('\n\n');
-  const count = [...selection.values(), ...extraCategories.map(c=>c.checkbox)].filter(c=>c?.checked).length;
-  $('selectionCount').textContent = count + ' élément' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 's' : '');
-  const hasSelectedContent = Object.entries(fields).some(([key,el])=>selection.get(key).checked && el.value.trim()) || extraCategories.some(c=>c.checkbox?.checked && c.field.value.trim());
+  const count=extraCategories.filter(c=>c.checkbox?.checked).length;
+  $('selectionCount').textContent='11 champs obligatoires · '+count+' complément'+(count>1?'s':'');
+  const hasSelectedContent=Object.values(fields).some(el=>el.value.trim()) || extraCategories.some(c=>c.checkbox?.checked && c.field.value.trim());
+  if(!hasSelectedContent) ui.result.value='';
   ui.copy.disabled = busy || !hasSelectedContent;
 }
 for (const [id, checked] of [['selectAll',true],['selectNone',false]]) {
   $(id).addEventListener('click', () => {
-    for (const checkbox of [...selection.values(), ...extraCategories.map(c=>c.checkbox)]) checkbox.checked = checked;
+    for (const category of extraCategories) { category.checkbox.checked=checked; category.field.hidden=!checked; }
+    fitAllEditors();
     regenerate();
   });
 }
@@ -767,14 +767,6 @@ async function analyzeFile(file){
     if(surv){
       try{const s=await readSurveillance(surv.page);base.params=s.params;base.admin=s.admin;}
       catch(e){console.error(e);addAlert('Tableau de surveillance détecté mais lecture OCR interrompue : '+e.message,'error');base.params=NON_LU;base.admin=NON_LU;}
-      try {
-        const canvas=await renderPageToCanvas(surv.page,2);
-        const worker=await getOCRWorker();
-        await worker.setParameters({tessedit_pageseg_mode:'3',preserve_interword_spaces:'1',tessedit_char_whitelist:''});
-        const {data}=await worker.recognize(canvas);
-        surv.ocrText=(data.text || '').trim();
-        canvas.width=canvas.height=0;
-      } catch (_) { addAlert('Le tableau complet reste à vérifier dans le PDF original.'); }
     }
     buildDocumentCategories(pages);
     updateFields(base);

@@ -6,23 +6,27 @@ Le PDF est traité dans le navigateur et n'est pas envoyé au serveur.
 
 ## Choisir le contenu à copier
 
-Les champs EXOS sont présélectionnés. Chaque champ peut être modifié et décoché.
-La section « Rubriques du document complet » donne accès au texte de toutes les
-pages, découpé selon la position des titres PARSYS et des colonnes du formulaire.
-Les en-têtes répétitifs, pieds de page, titres vides et signature sont exclus.
-Les éléments sans titre reconnu restent dans un bloc de la page correspondante. Les rubriques supplémentaires
-sont décochées au départ pour éviter les doublons avec les champs EXOS.
+Les 11 champs initiaux constituent un socle obligatoire, toujours inclus dans la
+copie : identité, adresse, vecteur, antécédents, traitement habituel, anamnèse,
+paramètres, traitements administrés, diagnostic, transport et destination.
+Ils restent modifiables. Les valeurs manquantes sont notées NR.
 
-L'aperçu affiche exactement la sélection à copier. « Tout sélectionner » et
-« Tout désélectionner » agissent sur les champs et les rubriques supplémentaires.
-Les pages sans couche de texte sont lues par OCR local et doivent être vérifiées.
-Les tableaux du document complet sont du texte brut : leur ordre et leurs valeurs
-doivent être comparés au PDF original. L'extraction structurée des derniers
-paramètres et des traitements administrés reste disponible dans les champs EXOS.
+Les champs sont classés dans Identité, Intervention, Médical et Transport et
+orientation. La liste « Éléments complémentaires » propose uniquement des ajouts,
+tous décochés au départ. Cocher un complément affiche son éditeur et l'ajoute à
+l'aperçu dans sa catégorie. Les actions globales agissent uniquement sur les ajouts.
+
+Les compléments sont découpés par libellé, colonne et rubrique du PDF : poids,
+taille, IMC, réglages de ventilation, horaires et examens sont indépendants.
+Les champs déjà inclus dans le socle et la surveillance brute ne sont pas proposés
+une seconde fois. Les en-têtes, pieds de page et signature sont exclus.
+Les noms du requérant sont identifiés comme tels, distincts du patient.
+Les pages sans texte sont lues par OCR local et doivent être vérifiées ; leur
+classement est moins précis que celui d'un PDF PARSYS avec couche de texte.
 
 Le champ « Type de vecteur SMUR » reprend le type de véhicule indiqué dans le PDF ;
-il ne constitue pas un indicatif opérationnel. La surveillance graphique dispose
-également d'une lecture OCR brute distincte, signalée comme devant être vérifiée.
+il ne constitue pas un indicatif opérationnel. La surveillance graphique alimente
+les champs Paramètres et Traitements administrés via OCR local.
 L'aperçu est affiché à côté des champs sur ordinateur et sous les champs sur mobile.
 
 Tests du classement : `node --test tests/document-sections.test.cjs`.
