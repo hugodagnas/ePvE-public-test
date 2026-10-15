@@ -1,0 +1,63 @@
+main { width: min(100% - 32px, 1040px); margin: 22px auto 0; }
+main > header { margin-bottom: 16px; }
+main > header h1 { margin: 0 0 3px; color: var(--medi15-nav); font-size: 25px; line-height: 1.2; }
+main > header p { margin: 0; color: var(--medi15-muted); font-size: 14px; }
+.card { margin-bottom: 12px; padding: 16px 18px; border: 1px solid var(--medi15-line); border-radius: var(--medi15-radius); background: var(--medi15-surface); box-shadow: var(--medi15-shadow-sm); }
+.card h2 { margin: 0 0 12px; color: var(--medi15-nav); font-size: 17px; }
+.dropzone { padding: 15px; border: 2px dashed #8aa9bf; border-radius: var(--medi15-radius); background: var(--medi15-surface-raised); color: var(--medi15-muted); cursor: pointer; text-align: center; }
+.dropzone strong { display: block; color: var(--medi15-accent-strong); font-size: 15px; }
+.dropzone.dragover { border-color: var(--medi15-accent); background: var(--medi15-accent-soft); }
+.dropzone[aria-disabled="true"] { cursor: wait; opacity: .65; }
+.import-status { display: flex; justify-content: space-between; gap: 8px 16px; margin-top: 10px; color: var(--medi15-muted); font-size: 13px; }
+#fileName { min-width: 0; overflow-wrap: anywhere; }
+.status-ok { color: var(--medi15-success); }
+.status-warn { color: #8a5a00; }
+
+.progress-panel { margin-top: 10px; }
+.progress-panel.is-idle { display: none; }
+.progress-meta { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: var(--medi15-muted); font-size: 12px; font-weight: 700; }
+.progress-meta strong { color: var(--medi15-accent-strong); font-size: 13px; font-variant-numeric: tabular-nums; }
+.progress-track { --progress: 0%; position: relative; height: 10px; border-radius: 999px; background: var(--medi15-line); }
+.progress-fill { width: var(--progress); height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--medi15-accent), #43a8c6); transition: width .35s ease; }
+.progress-arrow { position: absolute; z-index: 2; top: 50%; left: clamp(13px, var(--progress), calc(100% - 13px)); display: grid; place-items: center; width: 25px; height: 25px; padding: 0; border: 2px solid #fff; border-radius: 50%; background: var(--medi15-accent-strong); color: #fff; box-shadow: 0 2px 8px rgba(18,43,63,.24); font: 14px/1 var(--medi15-font); transform: translate(-50%, -50%); transition: left .35s ease; }
+.progress-panel.is-rewind .progress-arrow { cursor: grab; touch-action: none; }
+.progress-panel.is-rewind .progress-arrow:active { cursor: grabbing; }
+.progress-panel.is-rewind .progress-fill, .progress-panel.is-rewind .progress-arrow, .progress-panel.is-traveling .progress-fill, .progress-panel.is-traveling .progress-arrow { transition: none; }
+.progress-panel.is-traveling .progress-arrow { opacity: 0; }
+.time-travel { position: absolute; z-index: 3; right: 0; bottom: -9px; left: 0; height: 69px; overflow: hidden; opacity: 0; pointer-events: none; }
+.time-travel.is-active { opacity: 1; }
+.time-travel-vehicle { position: absolute; bottom: 13px; left: -128px; width: 120px; height: 50px; filter: drop-shadow(0 3px 5px rgba(9,26,46,.35)); }
+.time-travel-vehicle::before, .time-travel-vehicle::after { position: absolute; right: 100%; content: ""; width: 90px; height: 3px; border-radius: 999px; background: linear-gradient(90deg, transparent, #ffb64a, #62e7ff); box-shadow: 0 0 9px #58dfff; }
+.time-travel-vehicle::before { top: 28px; }
+.time-travel-vehicle::after { top: 37px; }
+.time-travel.is-active .time-travel-vehicle { animation: time-car-drive 2.4s cubic-bezier(.3,.05,.7,.95) forwards; }
+.time-travel svg { position: relative; display: block; width: 100%; height: 100%; }
+.time-car-body { fill: #173a63; stroke: #9be8fa; stroke-width: 2; stroke-linejoin: round; }
+.time-car-window { fill: #82dbe9; stroke: #e6fcff; stroke-width: 1.4; }
+.time-car-detail { fill: none; stroke: #c7d8e8; stroke-width: 1.6; }
+.time-car-wheel { fill: #182332; stroke: #8aa5b5; stroke-width: 2; }
+.time-car-hub { fill: #d9edf1; }
+.time-car-light { fill: #ffcf7a; }
+@keyframes time-car-drive { 0% { left: -128px; } 70% { filter: drop-shadow(0 0 8px #5ce6ff); } 100% { left: calc(100% + 10px); filter: drop-shadow(0 0 16px #8beeff); } }
+.progress-track.is-resetting .progress-fill, .progress-track.is-resetting .progress-arrow { transition: none; }
+@media (prefers-reduced-motion: reduce) { .progress-fill, .progress-arrow { transition: none; } .time-travel.is-active .time-travel-vehicle { animation-duration: .8s; } }
+
+.alerts { display: none; }
+.alerts.visible { display: block; }
+.alert { margin-top: 7px; padding: 8px 10px; border: 1px solid #efd383; border-radius: 7px; background: #fff5d6; color: #8a5a00; }
+.alert.error { border-color: #efb4b4; background: #fde8e8; color: var(--medi15-danger); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
+.field { min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field label { display: block; margin-bottom: 4px; color: var(--medi15-ink); font-size: 13px; font-weight: 700; }
+.field textarea { display: block; width: 100%; height: 48px; min-height: 48px; padding: 8px 10px; border: 1px solid var(--medi15-line); border-radius: 7px; background: var(--medi15-surface-raised); color: var(--medi15-ink); font: 14px/1.4 var(--medi15-font); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; resize: vertical; }
+.field textarea::-webkit-scrollbar { display: none; }
+.field textarea.tall { height: 96px; min-height: 72px; }
+.field textarea:focus { border-color: var(--medi15-accent); background: #fff; }
+.actions { display: flex; gap: 9px; }
+.action-bar { position: sticky; z-index: 5; bottom: 0; margin: 0; padding: 11px 0; background: rgba(245,247,250,.97); }
+.actions button { min-height: 40px; padding: 9px 16px; border: 0; border-radius: 7px; font: 700 14px var(--medi15-font); cursor: pointer; }
+.actions button:disabled { cursor: not-allowed; opacity: .5; }
+.actions .primary { background: var(--medi15-accent); color: #fff; }
+.actions .ghost { background: #e8edf2; color: var(--medi15-ink); }
+@media (max-width: 700px) { main { width: min(100% - 24px, 1040px); margin-top: 16px; } .card { padding: 14px; } .grid { grid-template-columns: 1fr; } .field.full { grid-column: auto; } .import-status { flex-wrap: wrap; } }
