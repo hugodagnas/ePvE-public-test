@@ -6,19 +6,20 @@
   <title>ePvE · Medi15</title>
   <link rel="icon" type="image/png" href="./ui/medi15-logo.png">
   <link rel="stylesheet" href="./ui/medi15.css">
-  <link rel="stylesheet" href="./static/app.css?v=categories-11">
-  <script src="./static/converter.js?v=categories-11" defer></script>
+  <link rel="stylesheet" href="./static/app.css?v=layout-12">
+  <script src="./static/document-sections.js?v=layout-12" defer></script>
+  <script src="./static/converter.js?v=layout-12" defer></script>
 </head>
 <body>
 <header class="medi15-topbar"><div class="medi15-brand"><img class="medi15-brand-logo" src="./ui/medi15-logo.png" alt=""><span>Medi15</span></div><span class="medi15-app-name">ePvE · Test public</span></header>
 <main>
 <header>
-  <h1>Extracteur PARSYS → EXOS</h1>
+  <div class="eyebrow">CONVERTISSEUR DE BILAN</div><h1>Du bilan PARSYS au texte EXOS</h1>
   <p>Importez le bilan, vérifiez les données, puis copiez-les dans EXOS.</p>
 </header>
 
 <section class="card">
-  <h2>Bilan PARSYS</h2>
+  <h2><span class="step">1</span> Importer le bilan</h2>
   <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Sélectionner un PDF PARSYS">
     <strong>Glisser-déposer le PDF PARSYS</strong>
     ou cliquer pour sélectionner le fichier
@@ -54,12 +55,13 @@
   <div id="alertsList"></div>
 </section>
 
-<section class="card">
-  <h2>Éléments à copier</h2>
+<div class="workspace"><div class="editor-column">
+<section class="card" id="essentialSection">
+  <h2><span class="step">2</span> Vérifier et sélectionner</h2>
   <p class="selection-help">Cochez les éléments souhaités et vérifiez leur contenu avant de copier.</p>
   <div class="actions selection-actions"><button type="button" class="ghost" id="selectAll">Tout sélectionner</button><button type="button" class="ghost" id="selectNone">Tout désélectionner</button><span id="selectionCount" role="status"></span></div>
   <div class="grid">
-    <div class="field"><label for="f-vehicle">Indicatif du véhicule</label><textarea rows="1" id="f-vehicle"></textarea></div>
+    <div class="field"><label for="f-vehicle">Type de vecteur SMUR</label><textarea rows="1" id="f-vehicle"></textarea></div>
     <div class="field"><label for="f-address">Adresse d’intervention</label><textarea rows="1" id="f-address"></textarea></div>
     <div class="field full"><label for="f-identity">Identité</label><textarea rows="1" id="f-identity"></textarea></div>
     <div class="field"><label for="f-history">Antécédents</label><textarea rows="1" id="f-history"></textarea></div>
@@ -78,16 +80,16 @@
   </div>
 </section>
 <section id="documentSection" class="card" hidden>
-  <h2>Rubriques du document complet</h2>
-  <p class="selection-help">Texte du PDF classé par rubrique et par page. Ces rubriques peuvent recouper les champs ci-dessus. Les tableaux sont présentés en texte brut : vérifiez les valeurs dans le PDF original.</p>
-  <details><summary>Afficher et sélectionner les rubriques du PDF</summary><div id="documentCategories" class="grid"></div></details>
+  <h2>Autres rubriques du bilan</h2>
+  <p class="selection-help">Rubriques regroupées par page, à ajouter à votre sélection. Certaines reprennent les champs de synthèse. Vérifiez les tableaux dans le PDF original.</p>
+  <div id="documentCategories"></div>
 </section>
-<section class="card"><details><summary>Aperçu du texte à copier</summary>
-<textarea id="resultat" aria-label="Texte pour EXOS" readonly></textarea></details></section>
+</div><aside class="preview-column"><section class="card preview-card"><h2><span class="step">3</span> Copier la sélection</h2><p class="selection-help">Cet aperçu contient exactement le texte qui sera copié.</p>
+<textarea id="resultat" aria-label="Texte pour EXOS" readonly></textarea>
 <div class="actions action-bar">
   <button class="primary" id="copyBtn" disabled>Copier pour EXOS</button>
   <button class="ghost" id="resetBtn">Réinitialiser</button>
-</div>
+</div></section></aside></div>
 
 </main>
 <footer class="medi15-footer"><div class="medi15-footer-brand"><img class="medi15-footer-logo" src="./ui/medi15-logo.png" alt=""><span>Medi15</span></div><div class="medi15-footer-copy">Le numérique au service de l’urgence</div></footer>

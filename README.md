@@ -8,8 +8,9 @@ Le PDF est traité dans le navigateur et n'est pas envoyé au serveur.
 
 Les champs EXOS sont présélectionnés. Chaque champ peut être modifié et décoché.
 La section « Rubriques du document complet » donne accès au texte de toutes les
-pages, découpé selon les titres PARSYS reconnus. Les éléments sans titre reconnu
-restent dans un bloc de la page correspondante. Les rubriques supplémentaires
+pages, découpé selon la position des titres PARSYS et des colonnes du formulaire.
+Les en-têtes répétitifs, pieds de page, titres vides et signature sont exclus.
+Les éléments sans titre reconnu restent dans un bloc de la page correspondante. Les rubriques supplémentaires
 sont décochées au départ pour éviter les doublons avec les champs EXOS.
 
 L'aperçu affiche exactement la sélection à copier. « Tout sélectionner » et
@@ -18,6 +19,13 @@ Les pages sans couche de texte sont lues par OCR local et doivent être vérifi�
 Les tableaux du document complet sont du texte brut : leur ordre et leurs valeurs
 doivent être comparés au PDF original. L'extraction structurée des derniers
 paramètres et des traitements administrés reste disponible dans les champs EXOS.
+
+Le champ « Type de vecteur SMUR » reprend le type de véhicule indiqué dans le PDF ;
+il ne constitue pas un indicatif opérationnel. La surveillance graphique dispose
+également d'une lecture OCR brute distincte, signalée comme devant être vérifiée.
+L'aperçu est affiché à côté des champs sur ordinateur et sous les champs sur mobile.
+
+Tests du classement : `node --test tests/document-sections.test.cjs`.
 
 ## Publication sur GitHub Pages
 

@@ -641,11 +641,12 @@ function updateFields(data){
   fields.params.value=data.params; fields.admin.value=data.admin; fields.anamnesis.value=data.anamnesis;
   for(const key of ['vehicle','diagnosis','transport','destination'])fields[key].value=data[key];
   regenerate();
+  fitAllEditors();
 }
 function valueOrNR(el){const v=el.value.trim();return v||'NR';}
 const extraCategories = [];
 const fieldTitles = {
-  vehicle:'Indicatif du véhicule', address:'Adresse d’intervention', identity:'Identité',
+  vehicle:'Type de vecteur SMUR', address:'Adresse d’intervention', identity:'Identité',
   history:'Antécédents', usual:'Traitement habituel', params:'Paramètres',
   admin:'Traitements administrés', anamnesis:'Anamnèse', diagnosis:'Diagnostic',
   transport:'Transport', destination:'Destination'
@@ -655,6 +656,9 @@ for (const [key, field] of Object.entries(fields)) {
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox'; checkbox.checked = true;
   checkbox.setAttribute('aria-label', 'Inclure : ' + fieldTitles[key]);
+  checkbox.id = 'include-' + key;
+  field.previousElementSibling.htmlFor = checkbox.id;
+  field.setAttribute('aria-label', fieldTitles[key]);
   field.previousElementSibling.prepend(checkbox);
   selection.set(key, checkbox);
   checkbox.addEventListener('change', regenerate);
@@ -668,46 +672,45 @@ function clearCategories() {
 // Split at recognised PARSYS section headings. Unknown material remains available
 // in the current section or in a page block, so no page is silently discarded.
 function buildDocumentCategories(pages) {
-  const headings = new Set([
-    'Volet administratif','Régulation médicale',"Lieu d'intervention",'Événement',
-    'Requérant','Déclenchement SMUR','Patient','Volet médical','Anamnèse',
-    'Antécédents','Traitements en cours','Mode de vie','Mensurations','Examen clinique',
-    'Diagnostic final','Diagnostique final','Diagnostic','Transport','Admission',
-    "Surveillance du patient pendant l'intervention",
-    'Examens complémentaires et Évolution médicale','Examens complémentaires',
-    'Évolution médicale','Ventilation',"Voies d'abord",'Signature du médecin','Notes'
-  ].map(normalize));
-  for (const page of pages) {
-    let block = null;
-    for (const line of page.lines) {
-      if (headings.has(normalize(line.text))) {
-        block = {title:line.text, page:page.number, lines:[]};
-        extraCategories.push(block);
-      } else {
-        if (!block) {
-          block = {title:'Autres éléments du document', page:page.number, lines:[]};
-          extraCategories.push(block);
-        }
-        block.lines.push(line.text);
-      }
-    }
-  }
+  extraCategories.push(...extractDocumentSections(pages));
   for (const category of extraCategories) {
     const container = document.createElement('div'); container.className = 'field full document-category';
     const label = document.createElement('label');
     const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
     const id = 'document-category-' + extraCategories.indexOf(category);
-    label.htmlFor = id;
+    label.htmlFor = id + '-selected'; checkbox.id = id + '-selected';
     checkbox.setAttribute('aria-label', 'Inclure : ' + category.title + ' · page ' + category.page);
     label.append(checkbox, document.createTextNode(category.title + ' · page ' + category.page));
     const text = document.createElement('textarea'); text.id = id; text.rows = 1;
     text.value = category.lines.join('\n') || 'NR';
+    text.setAttribute('aria-label', category.title + ' · page ' + category.page);
+    text.addEventListener('input', () => fitEditor(text));
     category.checkbox = checkbox; category.field = text;
     checkbox.addEventListener('change', regenerate); text.addEventListener('input', regenerate);
-    container.append(label, text); $('documentCategories').append(container);
+    container.append(label, text);
+    let group = document.querySelector('[data-document-page="' + category.page + '"]');
+    if (!group) {
+      group = document.createElement('details'); group.dataset.documentPage = category.page; group.open = true;
+      const summary = document.createElement('summary'); summary.textContent = 'Page ' + category.page;
+      group.append(summary); $('documentCategories').append(group);
+    }
+    if (category.uncertain) {
+      const note=document.createElement('p'); note.className='source-note';
+      note.textContent='Lecture brute à comparer au PDF original'; container.append(note);
+    }
+    group.append(container);
   }
   $('documentSection').hidden = false;
+  requestAnimationFrame(fitAllEditors);
 }
+function fitEditor(el) {
+  if (!el.getClientRects().length) return;
+  el.style.height = 'auto'; el.style.height = Math.max(52, el.scrollHeight + 2) + 'px';
+}
+function fitAllEditors() { for (const el of [...Object.values(fields), ...extraCategories.map(c=>c.field)]) if(el) fitEditor(el); }
+document.addEventListener('toggle', fitAllEditors, true);
+window.addEventListener('resize', fitAllEditors);
+for(const field of Object.values(fields)) field.addEventListener('input',()=>fitEditor(field));
 function regenerate(){
   const blocks = [];
   for (const [key, title] of Object.entries(fieldTitles)) {
@@ -716,6 +719,8 @@ function regenerate(){
   for (const category of extraCategories) {
     if (category.checkbox?.checked) blocks.push(category.title.toUpperCase() + ' · PAGE ' + category.page + '\n' + valueOrNR(category.field));
   }
+  for(const [key,field] of Object.entries(fields)) field.closest('.field').classList.toggle('is-excluded', !selection.get(key).checked);
+  for(const category of extraCategories) category.field.closest('.field').classList.toggle('is-excluded', !category.checkbox.checked);
   ui.result.value = blocks.join('\n\n');
   const count = [...selection.values(), ...extraCategories.map(c=>c.checkbox)].filter(c=>c?.checked).length;
   $('selectionCount').textContent = count + ' élément' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 's' : '');
@@ -757,13 +762,21 @@ async function analyzeFile(file){
       canvas.width = canvas.height = 0;
       if (!page.text) page.lines = [{text:'⚠ Page sans texte lisible — vérifier le PDF original.',items:[]}];
     }
-    buildDocumentCategories(pages);
     const base={address:extractAddress(pages),identity:extractIdentity(pages),...extractAnamnesisParts(pages),...extractFinalDetails(pages),params:'NR',admin:'NR'};
     const surv=pages.find(p=>normalize(p.text).includes(normalize("Surveillance du patient pendant l'intervention")));
     if(surv){
       try{const s=await readSurveillance(surv.page);base.params=s.params;base.admin=s.admin;}
       catch(e){console.error(e);addAlert('Tableau de surveillance détecté mais lecture OCR interrompue : '+e.message,'error');base.params=NON_LU;base.admin=NON_LU;}
+      try {
+        const canvas=await renderPageToCanvas(surv.page,2);
+        const worker=await getOCRWorker();
+        await worker.setParameters({tessedit_pageseg_mode:'3',preserve_interword_spaces:'1',tessedit_char_whitelist:''});
+        const {data}=await worker.recognize(canvas);
+        surv.ocrText=(data.text || '').trim();
+        canvas.width=canvas.height=0;
+      } catch (_) { addAlert('Le tableau complet reste à vérifier dans le PDF original.'); }
     }
+    buildDocumentCategories(pages);
     updateFields(base);
     setStatus('Données prêtes à vérifier · remise à zéro dans 5 min',100,'status-ok');
     scheduleAutoRefresh();
