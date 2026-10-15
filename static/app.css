@@ -182,3 +182,8 @@ main > header h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 8px; }
 .field-dialog h2 { margin: 0 0 16px; font-size: 18px; }
 .field-dialog-value { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.6; }
 .field-dialog button { border: 0; border-radius: 7px; padding: 9px 16px; background: var(--medi15-accent); color: white; cursor: pointer; }
+.grid .field label, #documentCategories .document-category label,
+.grid .field textarea[readonly], #documentCategories .document-category textarea[readonly] {
+  align-self: start;
+  line-height: 17px;
+}
