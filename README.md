@@ -21,6 +21,11 @@ taille, IMC, réglages de ventilation, horaires et examens sont indépendants.
 Les champs déjà inclus dans le socle et la surveillance brute ne sont pas proposés
 une seconde fois. Les en-têtes, pieds de page et signature sont exclus.
 Les noms du requérant sont identifiés comme tels, distincts du patient.
+Le requérant est regroupé sous la forme « NOM Prénom (Type de requérant) ».
+Le numéro composé et l'heure du premier appel partagent un champ ; le poids et
+l'IMC également. Chaque champ est copié sous la forme « Libellé : valeur » sur
+une ligne, sous le titre de sa catégorie. Les listes internes sont séparées par
+des points-virgules. Les informations manquantes d'un regroupement sont notées NR.
 Les pages sans texte sont lues par OCR local et doivent être vérifiées ; leur
 classement est moins précis que celui d'un PDF PARSYS avec couche de texte.
 

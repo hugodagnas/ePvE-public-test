@@ -44,7 +44,22 @@ test('optional fields exclude the mandatory identity/address/vector and split pa
     line(520,{x:29,str:'Poids'},{x:170,str:'70 kg'},{x:298,str:'Taille'},{x:410,str:'175 cm'})
   ]}]);
   assert.deepEqual(fields.map(f=>f.title),['Nationalité',"Type d'intervention",'Poids','Taille']);
-  assert.deepEqual(fields.find(f=>f.title==='Poids').lines,['70 kg']);
+  assert.deepEqual(fields.find(f=>f.title==='Poids').lines,['70 kg (IMC = NR)']);
   assert.deepEqual(fields.find(f=>f.title==='Taille').lines,['175 cm']);
   assert.equal(fields[0].group,'Identité');
+});
+test('requested compound fields are merged within their page and section only',()=>{
+  const {mergeOptionalFields:merge}=require('../static/document-sections.js');
+  const field=(title,value,section='Requérant',page=1)=>({title,lines:[value],section,page});
+  const result=merge([
+    field('Nom du requérant','Dupont'),field('Prénom du requérant','Marie'),field('Type de requérant','Famille'),
+    field('Numéro composé en premier','15'),field('Heure du 1er appel','12:30'),
+    field('Poids','72 kg','Mensurations',2),field('IMC','22.72','Mensurations',2),
+    field('Taille','178 cm','Mensurations',2),field('Poids','80 kg','Mensurations',3)
+  ]);
+  assert.deepEqual(result.find(f=>f.title==='Requérant').lines,['DUPONT Marie (Famille)']);
+  assert.deepEqual(result.find(f=>f.title.startsWith('Numéro')).lines,['15 (1er appel : 12:30)']);
+  assert.deepEqual(result.find(f=>f.title==='Poids'&&f.page===2).lines,['72 kg (IMC = 22.72)']);
+  assert.deepEqual(result.find(f=>f.title==='Poids'&&f.page===3).lines,['80 kg (IMC = NR)']);
+  assert(!result.some(f=>['IMC','Nom du requérant','Prénom du requérant','Type de requérant','Heure du 1er appel'].includes(f.title)));
 });

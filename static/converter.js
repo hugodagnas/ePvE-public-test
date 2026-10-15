@@ -712,15 +712,16 @@ document.addEventListener('toggle', fitAllEditors, true);
 window.addEventListener('resize', fitAllEditors);
 for(const field of Object.values(fields)) field.addEventListener('input',()=>fitEditor(field));
 function regenerate(){
+  const line=(title,field)=>title+' : '+valueOrNR(field).replace(/\s*\n+\s*/g,' ; ');
   const blocks = [];
   for(const [group,keys] of Object.entries(mandatoryGroups)) {
-    const content=keys.map(key=>fieldTitles[key].toUpperCase()+'\n'+valueOrNR(fields[key]));
+    const content=keys.map(key=>line(fieldTitles[key],fields[key]));
     const extras=extraCategories.filter(c=>c.group===group && c.checkbox?.checked);
-    for(const category of extras) content.push(category.title.toUpperCase()+'\n'+valueOrNR(category.field));
-    blocks.push(group.toUpperCase()+'\n\n'+content.join('\n\n'));
+    for(const category of extras) content.push(line(category.title,category.field));
+    blocks.push(group.toUpperCase()+'\n'+content.join('\n'));
   }
   const others=extraCategories.filter(c=>!mandatoryGroups[c.group] && c.checkbox?.checked);
-  if(others.length) blocks.push('AUTRES INFORMATIONS\n\n'+others.map(c=>c.title.toUpperCase()+'\n'+valueOrNR(c.field)).join('\n\n'));
+  if(others.length) blocks.push('AUTRES INFORMATIONS\n'+others.map(c=>line(c.title,c.field)).join('\n'));
   for(const category of extraCategories) category.field.closest('.field').classList.toggle('is-excluded',!category.checkbox.checked);
   ui.result.value = blocks.join('\n\n');
   const count=extraCategories.filter(c=>c.checkbox?.checked).length;

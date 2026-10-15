@@ -132,3 +132,12 @@ main > header h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 8px; }
 #documentCategories .document-category { padding: 6px 8px; }
 #documentCategories .document-category label { font-size: 11px; line-height: 1.3; }
 #documentCategories .document-category textarea[readonly] { margin-top: 3px; font-size: 12px; line-height: 1.35; }
+.field { display: flex; align-items: flex-start; gap: 8px; }
+.field label { flex: 0 0 36%; min-width: 0; margin: 0; padding-top: 1px; }
+.field label::after { content: ' :'; }
+.field textarea[readonly] { flex: 1; min-width: 0; width: 0; }
+#documentCategories .document-category label { flex-basis: 45%; }
+#documentCategories .document-category textarea[readonly] { margin-top: 0; }
+#documentCategories .document-category.is-excluded label { flex-basis: 100%; }
+#documentCategories .document-category.is-excluded label::after { content: ''; }
+.field .source-note { flex-basis: 100%; }

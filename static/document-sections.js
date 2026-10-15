@@ -103,6 +103,28 @@
     return sections;
   }
   root.extractDocumentSections=extract;
+  function mergeOptionalFields(fields) {
+    const result=[...fields];
+    const definitions=[
+      {title:'Requérant',names:['Nom du requérant','Prénom du requérant','Type de requérant'],
+        format:([name,first,type])=>name.toUpperCase()+' '+first+' ('+type+')'},
+      {title:'Numéro composé en premier / Heure du 1er appel',names:['Numéro composé en premier','Heure du 1er appel'],
+        format:([number,time])=>number+' (1er appel : '+time+')'},
+      {title:'Poids',names:['Poids','IMC'],format:([weight,imc])=>weight+' (IMC = '+imc+')'}
+    ];
+    for(const definition of definitions) {
+      const scopes=new Set(result.filter(f=>definition.names.includes(f.title)).map(f=>JSON.stringify([f.page,f.section])));
+      for(const scope of scopes) {
+        const [page,section]=JSON.parse(scope);
+        const parts=definition.names.map(title=>result.find(f=>f.page===page && f.section===section && f.title===title));
+        const first=parts.find(Boolean); const index=result.indexOf(first);
+        const merged={...first,title:definition.title,lines:[definition.format(parts.map(f=>f ? f.lines.join(' ').trim() || 'NR' : 'NR'))]};
+        for(const part of parts) if(part) result.splice(result.indexOf(part),1);
+        result.splice(Math.min(index,result.length),0,merged);
+      }
+    }
+    return result;
+  }
   function optionalFields(pages) {
     const duplicateSections=new Set(['antecedents','traitements en cours','diagnostic','diagnostique']);
     const duplicateLabels=new Set(['adresse','type de vecteur smur',"prenom, nom",'date de naissance','age','sexe','transporte','etablissement receveur']);
@@ -124,8 +146,8 @@
         result.push({...field,title,page:section.page,group:groupFor(section.title),section:section.title,uncertain:section.uncertain});
       }
     }
-    return result;
+    return mergeOptionalFields(result);
   }
   root.extractOptionalFields=optionalFields;
-  if(typeof module!=='undefined') module.exports={extractDocumentSections:extract,extractOptionalFields:optionalFields};
+  if(typeof module!=='undefined') module.exports={extractDocumentSections:extract,extractOptionalFields:optionalFields,mergeOptionalFields};
 })(typeof window!=='undefined'?window:globalThis);
