@@ -111,3 +111,20 @@ main > header h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 8px; }
 #documentCategories .document-category { grid-column: 1 / -1; margin: 0; }
 #documentCategories .document-category.is-excluded { grid-column: auto; }
 @media (max-width: 1050px) { #documentCategories > section { grid-template-columns: 1fr; } }
+
+/* Compact, read-only extracted values. Checkboxes remain interactive. */
+.card { padding: 16px; margin-bottom: 12px; }
+.mandatory-group { margin-top: 14px; }
+.mandatory-group h3, #documentCategories h3 { margin-bottom: 8px; padding-bottom: 6px; }
+.grid { gap: 8px 10px; }
+.field { padding: 8px 10px; }
+.field label { margin-bottom: 3px; font-size: 12px; min-height: 18px; }
+.field textarea[readonly], .field textarea.tall[readonly] { min-height: 28px; padding: 3px 0; border: 0; border-radius: 0; background: transparent; font-size: 13px; line-height: 1.4; }
+.field textarea[readonly]:focus { background: transparent; }
+#documentCategories > section { margin-top: 14px; gap: 6px 10px; }
+#documentCategories .document-category { grid-column: auto; padding: 7px 9px; }
+#documentCategories .document-category label { margin-bottom: 0; }
+.document-category textarea { margin-top: 4px; }
+.selection-actions { margin-bottom: 10px; }
+.selection-help { margin-bottom: 8px; font-size: 12px; }
+.grid, #documentCategories > section { align-items: start; }

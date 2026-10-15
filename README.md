@@ -9,11 +9,11 @@ Le PDF est traité dans le navigateur et n'est pas envoyé au serveur.
 Les 11 champs initiaux constituent un socle obligatoire, toujours inclus dans la
 copie : identité, adresse, vecteur, antécédents, traitement habituel, anamnèse,
 paramètres, traitements administrés, diagnostic, transport et destination.
-Ils restent modifiables. Les valeurs manquantes sont notées NR.
+Ils sont en lecture seule. Les valeurs manquantes sont notées NR.
 
 Les champs sont classés dans Identité, Intervention, Médical et Transport et
 orientation. La liste « Éléments complémentaires » propose uniquement des ajouts,
-tous décochés au départ. Cocher un complément affiche son éditeur et l'ajoute à
+tous décochés au départ. Cocher un complément affiche sa valeur en lecture seule et l'ajoute à
 l'aperçu dans sa catégorie. Les actions globales agissent uniquement sur les ajouts.
 
 Les compléments sont découpés par libellé, colonne et rubrique du PDF : poids,
@@ -28,6 +28,8 @@ Le champ « Type de vecteur SMUR » reprend le type de véhicule indiqué dans l
 il ne constitue pas un indicatif opérationnel. La surveillance graphique alimente
 les champs Paramètres et Traitements administrés via OCR local.
 L'aperçu est affiché à côté des champs sur ordinateur et sous les champs sur mobile.
+Les champs utilisent un affichage compact sans indication de provenance ni numéro
+de page ; la sélection et la copie restent disponibles.
 
 Tests du classement : `node --test tests/document-sections.test.cjs`.
 

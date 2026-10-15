@@ -656,7 +656,10 @@ const mandatoryGroups = {
   'Médical':['history','usual','anamnesis','params','admin','diagnosis'],
   'Transport et orientation':['transport','destination']
 };
-for(const [key,field] of Object.entries(fields)) field.setAttribute('aria-label',fieldTitles[key]);
+for(const [key,field] of Object.entries(fields)) {
+  field.setAttribute('aria-label',fieldTitles[key]);
+  field.readOnly=true;
+}
 function clearCategories() {
   extraCategories.length = 0;
   $('documentCategories').replaceChildren();
@@ -673,11 +676,12 @@ function buildDocumentCategories(pages) {
     const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
     const id = 'document-category-' + extraCategories.indexOf(category);
     label.htmlFor = id + '-selected'; checkbox.id = id + '-selected';
-    checkbox.setAttribute('aria-label', 'Inclure : ' + category.title + ' · page ' + category.page);
+    checkbox.setAttribute('aria-label', 'Inclure : ' + category.title);
     label.append(checkbox, document.createTextNode(category.title));
     const text = document.createElement('textarea'); text.id = id; text.rows = 1;
+    text.readOnly=true;
     text.value = category.lines.join('\n') || 'NR';
-    text.setAttribute('aria-label', category.title + ' · page ' + category.page);
+    text.setAttribute('aria-label', category.title);
     text.addEventListener('input', () => fitEditor(text));
     category.checkbox = checkbox; category.field = text;
     checkbox.addEventListener('change', () => { text.hidden=!checkbox.checked; regenerate(); fitEditor(text); }); text.addEventListener('input', regenerate);
@@ -689,8 +693,6 @@ function buildDocumentCategories(pages) {
       const title=document.createElement('h3'); title.textContent=category.group;
       group.append(title); $('documentCategories').append(group);
     }
-    const source=document.createElement('small'); source.className='field-source';
-    source.textContent=category.section+' · page '+category.page; container.append(source);
     if (category.uncertain) {
       const note=document.createElement('p'); note.className='source-note';
       note.textContent='Lecture brute à comparer au PDF original'; container.append(note);
@@ -702,7 +704,7 @@ function buildDocumentCategories(pages) {
 }
 function fitEditor(el) {
   if (!el.getClientRects().length) return;
-  el.style.height = 'auto'; el.style.height = Math.max(52, el.scrollHeight + 2) + 'px';
+  el.style.height = 'auto'; el.style.height = Math.max(28, el.scrollHeight + 2) + 'px';
 }
 function fitAllEditors() { for (const el of [...Object.values(fields), ...extraCategories.map(c=>c.field)]) if(el) fitEditor(el); }
 document.addEventListener('toggle', fitAllEditors, true);
