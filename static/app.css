@@ -141,3 +141,44 @@ main > header h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 8px; }
 #documentCategories .document-category.is-excluded label { flex-basis: 100%; }
 #documentCategories .document-category.is-excluded label::after { content: ''; }
 .field .source-note { flex-basis: 100%; }
+
+/* One shared capsule size, independent of content length and selection. */
+.grid > .field, .grid > .field.full,
+#documentCategories .document-category,
+#documentCategories .document-category.is-excluded {
+  grid-column: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr) 24px;
+  gap: 8px;
+  align-items: center;
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+.grid .field label, #documentCategories .document-category label {
+  display: block;
+  min-width: 0;
+  max-height: 44px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+#documentCategories .document-category.is-excluded label { grid-column: 1 / 3; }
+.grid .field textarea[readonly], #documentCategories .document-category textarea[readonly] {
+  width: 100%; height: 34px; min-height: 34px; max-height: 34px;
+  margin: 0; padding: 0; font-size: 12px; line-height: 17px;
+  overflow: hidden; align-self: center;
+}
+.field-reader { width: 24px; height: 28px; padding: 0; border: 0; border-radius: 5px; background: var(--medi15-accent-soft); color: var(--medi15-accent-strong); cursor: pointer; font-size: 16px; }
+.document-category.is-excluded .field-reader { visibility: hidden; }
+.field .source-note { display: none; }
+.field-dialog { width: min(640px,calc(100vw - 32px)); max-height: 80vh; padding: 24px; border: 1px solid var(--medi15-line); border-radius: 12px; color: var(--medi15-ink); box-shadow: var(--medi15-shadow-md); }
+.field-dialog::backdrop { background: rgba(18,43,63,.45); }
+.field-dialog h2 { margin: 0 0 16px; font-size: 18px; }
+.field-dialog-value { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.6; }
+.field-dialog button { border: 0; border-radius: 7px; padding: 9px 16px; background: var(--medi15-accent); color: white; cursor: pointer; }

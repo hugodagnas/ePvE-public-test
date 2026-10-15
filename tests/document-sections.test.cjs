@@ -63,3 +63,15 @@ test('requested compound fields are merged within their page and section only',(
   assert.deepEqual(result.find(f=>f.title==='Poids'&&f.page===3).lines,['80 kg (IMC = NR)']);
   assert(!result.some(f=>['IMC','Nom du requérant','Prénom du requérant','Type de requérant','Heure du 1er appel'].includes(f.title)));
 });
+test('normalization removes metadata and empty duplicates, but keeps negative medical answers',()=>{
+  const {cleanOptionalFields:clean}=require('../static/document-sections.js');
+  const field=(title,value)=>({title,lines:[value],group:'Médical'});
+  const fields=clean([
+    field('Autres précisions — Ventilation','par Équipe 3'),
+    field('Notes','Non renseigné'),field('Notes','NR'),field('Notes',''),
+    field('Intubation difficile','Non'),field('Intubation difficile','Non'),
+    field('Pression du balonnet','22 mmHg'),field('Signe de detresse respiratoire aigue','Oui')
+  ]);
+  assert.deepEqual(fields.map(f=>f.title),['Intubation difficile','Pression du ballonnet','Détresse respiratoire aiguë']);
+  assert.deepEqual(fields[0].lines,['Non']);
+});

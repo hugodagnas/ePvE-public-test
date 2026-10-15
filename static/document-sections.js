@@ -146,8 +146,36 @@
         result.push({...field,title,page:section.page,group:groupFor(section.title),section:section.title,uncertain:section.uncertain});
       }
     }
-    return mergeOptionalFields(result);
+    return cleanOptionalFields(mergeOptionalFields(result));
+  }
+  function cleanOptionalFields(fields) {
+    const aliases={
+      'Signe de detresse respiratoire aigue':'Détresse respiratoire aiguë',
+      'Mouvements thoracique':'Mouvements thoraciques',
+      'Pression du balonnet':'Pression du ballonnet',
+      'VT (Volume courant)':'Volume courant (VT)',
+      'Mode ventilatoire VI':'Mode ventilatoire',
+      "Types de voies d'abord":"Type de voie d’abord",
+      'Numéro composé en premier / Heure du 1er appel':'Premier appel',
+      "Repère à l'arcade dentaire":'Repère dentaire',
+      "Prise en charge réalisée avant l'arrivée du SMUR":'Soins avant le SMUR',
+      "Heure d'arrivée des premiers secours":'Arrivée des premiers secours',
+      'Date et heure du 1er symptôme':'Début des symptômes'
+    };
+    const seen=new Set();
+    return fields.flatMap(field=>{
+      const value=field.lines.join(' ').replace(/\s+/g,' ').trim();
+      if(/^(?:nr|n\/?a|non renseigne|non renseignee|sans objet|[-–—])?$/i.test(normalize(value))) return [];
+      // Residual author stamps and generic "Autre" labels add no clinical content.
+      if(normalize(field.title).startsWith('autres precisions') && /^(?:par [\p{L}\d .’'-]+|autre)$/iu.test(value)) return [];
+      let title=aliases[field.title] || field.title;
+      title=title.replace(/Mouvements thoracique\b/,'Mouvements thoraciques');
+      const key=JSON.stringify([field.group,normalize(title),normalize(value)]);
+      if(seen.has(key)) return [];
+      seen.add(key);
+      return [{...field,title,lines:[value]}];
+    });
   }
   root.extractOptionalFields=optionalFields;
-  if(typeof module!=='undefined') module.exports={extractDocumentSections:extract,extractOptionalFields:optionalFields,mergeOptionalFields};
+  if(typeof module!=='undefined') module.exports={extractDocumentSections:extract,extractOptionalFields:optionalFields,mergeOptionalFields,cleanOptionalFields};
 })(typeof window!=='undefined'?window:globalThis);

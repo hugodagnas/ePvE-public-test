@@ -35,6 +35,11 @@ les champs Paramètres et Traitements administrés via OCR local.
 L'aperçu est affiché à côté des champs sur ordinateur et sous les champs sur mobile.
 Les champs utilisent un affichage compact sans indication de provenance ni numéro
 de page ; la sélection et la copie restent disponibles.
+Toutes les capsules ont la même hauteur de 64 px et les mêmes colonnes de
+libellé et de valeur. Le bouton ↗ ouvre le contenu intégral dans une fenêtre de
+lecture. La copie utilise toujours les valeurs complètes. Les libellés courants
+sont harmonisés ; les valeurs vides, mentions d'auteur résiduelles et doublons
+exacts sont retirés des compléments. Les réponses négatives restent conservées.
 
 Tests du classement : `node --test tests/document-sections.test.cjs`.
 
